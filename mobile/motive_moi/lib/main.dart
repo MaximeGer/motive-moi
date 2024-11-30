@@ -63,22 +63,32 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> motivations = [];
   String motivation = "";
 
-  Future<String> read() async {
+  Future<List<String>> read() async {
     String text = "";
+    List<String> result = [];
     try {
       final Directory directory = await getApplicationDocumentsDirectory();
       final File file = File('${directory.path}/../../../motivations.json');
       text = await file.readAsString();
+      Iterable i = jsonDecode(text);
+      result = List<String>.from(i);
     } catch (e) {
       print("Couldn't read file");
     }
-    return text;
+    return result;
   }
 
-  void _incrementCounter() {
+  void changeMotivation() {
     setState(() {
       motivation = motivations[Random().nextInt(motivations.length)];
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    () async => motivations = await read();
+    changeMotivation();
   }
 
   @override
@@ -129,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: changeMotivation,
         tooltip: 'Motive Moi',
         child: const Text("Motive Moi"),
       ), // This trailing comma makes auto-formatting nicer for build methods.
