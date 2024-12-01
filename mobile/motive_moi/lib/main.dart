@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:io';
 import 'dart:math';
 import 'package:path_provider/path_provider.dart';
@@ -62,33 +63,24 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<String> motivations = [];
   String motivation = "";
+  bool readIsDone = false;
 
   Future<List<String>> read() async {
-    String text = "";
     List<String> result = [];
-    try {
-      final Directory directory = await getApplicationDocumentsDirectory();
-      final File file = File('${directory.path}/../../../motivations.json');
-      text = await file.readAsString();
-      Iterable i = jsonDecode(text);
-      result = List<String>.from(i);
-    } catch (e) {
-      print("Couldn't read file");
-    }
+    String file = await DefaultAssetBundle.of(context)
+        .loadString("assets/motivation.json");
+    Iterable i = jsonDecode(file);
+    result = List<String>.from(i);
     return result;
   }
 
-  void changeMotivation() {
+  void changeMotivation() async {
+    if (!readIsDone) {
+      motivations = await read();
+    }
     setState(() {
       motivation = motivations[Random().nextInt(motivations.length)];
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    () async => motivations = await read();
-    changeMotivation();
   }
 
   @override
@@ -128,9 +120,6 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
             Text(
               motivation,
               style: Theme.of(context).textTheme.headlineMedium,
